@@ -9,7 +9,7 @@ load_dotenv()
 
 api_key = os.environ["API-KEY"]
 database = os.environ["DATABASE"]
-user = os.environ["USER"]
+user = os.environ["DBUSER"]
 password = os.environ["PASSWORD"]
 host = os.environ["HOST"]
 port = os.environ["PORT"]
