@@ -7,6 +7,7 @@ import sqlalchemy
 import psycopg2
 import spacy 
 from textblob import TextBlob
+from spacy import displacy
 
 st.set_page_config(page_title="Guardian Stats", 
                    layout="wide", 
@@ -144,5 +145,6 @@ sns.barplot(x='webpubyear', y='count', hue='sentiment_group', data=x)
 #user_df = df[df['webtitle'].str.contains(user_choice, case=False, na=False)]
 #st.dataframe(user_df)
 
-
-
+# i = st.number_input('Investigate the article entities further for a web title of your choice: ', 0, len(df_selection))
+# doc = df_selection['webtitle'][i]
+# displacy.render(doc, style='ent', manual=True)
