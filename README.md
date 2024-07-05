@@ -1,6 +1,6 @@
 # News Web App 
 
-:newspaper: A simple application for collecting, processing and visualising the metadata of environmental articles published on The Guardian. 
+:newspaper: A simple application for collecting, processing and visualising the metadata of recently published articles by The Guardian. 
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://data-evaluation-template.streamlit.app/)
 
