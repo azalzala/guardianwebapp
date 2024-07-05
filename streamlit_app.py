@@ -1,119 +1,55 @@
 import streamlit as st
 import pandas as pd
+import datetime
+import seaborn as sns
+import sqlalchemy
+import psycopg2
 
+# connecting the web app to database 
+conn = st.connection("postgresql", type="sql")
+df = conn.query('SELECT * FROM student.dabble', ttl='10m')
+st.dataframe(df)
+df['webpublicationdate'] = pd.to_datetime(df['webpublicationdate']).dt.date
 
-st.title("📊 Data evaluation app")
-
-st.write(
-    "We are so glad to see you here. ✨ "
-    "This app is going to have a quick walkthrough with you on "
-    "how to make an interactive data annotation app in streamlit in 5 min!"
+col1, col2 = st.columns([1, 2])
+with col1: 
+    st.title("Guardian News Environmental Articles through the Years")
+    st.write(
+        "Choose a tag and we will find Guardian articles related to that tag. "
+        "Explore the semantics, people or countries primarily involved with articles, available through NLP. "
+        "Close in on which environmental topics have the most articles. "
 )
 
-st.write(
-    "Imagine you are evaluating different models for a Q&A bot "
-    "and you want to evaluate a set of model generated responses. "
-    "You have collected some user data. "
-    "Here is a sample question and response set."
-)
 
-data = {
-    "Questions": [
-        "Who invented the internet?",
-        "What causes the Northern Lights?",
-        "Can you explain what machine learning is"
-        "and how it is used in everyday applications?",
-        "How do penguins fly?",
-    ],
-    "Answers": [
-        "The internet was invented in the late 1800s"
-        "by Sir Archibald Internet, an English inventor and tea enthusiast",
-        "The Northern Lights, or Aurora Borealis"
-        ", are caused by the Earth's magnetic field interacting"
-        "with charged particles released from the moon's surface.",
-        "Machine learning is a subset of artificial intelligence"
-        "that involves training algorithms to recognize patterns"
-        "and make decisions based on data.",
-        " Penguins are unique among birds because they can fly underwater. "
-        "Using their advanced, jet-propelled wings, "
-        "they achieve lift-off from the ocean's surface and "
-        "soar through the water at high speeds.",
-    ],
-}
+# sidebar for filtering articles 
+st.sidebar.header('Choose your filters')
 
-df = pd.DataFrame(data)
+# section names 
+array = df['sectionname'].unique()
+# from date / to date 
+begin_date = st.sidebar.date_input('Start date:', df['webpublicationdate'].min())
+end_date = st.sidebar.date_input('End Date: ', df['webpublicationdate'].max()) 
+#word-based filtering 
+user_choice = st.sidebar.text_input('Enter a keyword: ', '')
+section = st.sidebar.multiselect('Topics :+1:', array)
+pillar = st.sidebar.checkbox('Pillar', ['Arts', 'Opinion', 'Sport', 'News'])
 
-st.write(df)
+user_df = df[(df['webtitle'] == user_choice)]
+final_df = pd.DataFrame()
+final_df = df[(user_df[user_df['webpublicationdate']] >= begin_date) & (user_df[user_df['webpublicationdate']] <= end_date)].copy()
 
-st.write(
-    "Now I want to evaluate the responses from my model. "
-    "One way to achieve this is to use the very powerful `st.data_editor` feature. "
-    "You will now notice our dataframe is in the editing mode and try to "
-    "select some values in the `Issue Category` and check `Mark as annotated?` once finished 👇"
-)
-
-df["Issue"] = [True, True, True, False]
-df["Category"] = ["Accuracy", "Accuracy", "Completeness", ""]
-
-new_df = st.data_editor(
-    df,
-    column_config={
-        "Questions": st.column_config.TextColumn(width="medium", disabled=True),
-        "Answers": st.column_config.TextColumn(width="medium", disabled=True),
-        "Issue": st.column_config.CheckboxColumn("Mark as annotated?", default=False),
-        "Category": st.column_config.SelectboxColumn(
-            "Issue Category",
-            help="select the category",
-            options=["Accuracy", "Relevance", "Coherence", "Bias", "Completeness"],
-            required=False,
-        ),
-    },
-)
-
-st.write(
-    "You will notice that we changed our dataframe and added new data. "
-    "Now it is time to visualize what we have annotated!"
-)
+#return dataframe 
+#with col1: 
 
 st.divider()
 
-st.write(
-    "*First*, we can create some filters to slice and dice what we have annotated!"
-)
+#with col 2: 
+#visualisations 
+# top 10 ent/organisations mentioned ni articles in the past month 
+# most positive month? negative also / neutral 
+    # extract entities from the webtitles 
+    # sentiment scores for web titiles 
+    # group the articles by month published/? - count sentiment. 
 
-col1, col2 = st.columns([1, 1])
-with col1:
-    issue_filter = st.selectbox("Issues or Non-issues", options=new_df.Issue.unique())
-with col2:
-    category_filter = st.selectbox(
-        "Choose a category",
-        options=new_df[new_df["Issue"] == issue_filter].Category.unique(),
-    )
 
-st.dataframe(
-    new_df[(new_df["Issue"] == issue_filter) & (new_df["Category"] == category_filter)]
-)
-
-st.markdown("")
-st.write(
-    "*Next*, we can visualize our data quickly using `st.metrics` and `st.bar_plot`"
-)
-
-issue_cnt = len(new_df[new_df["Issue"] == True])
-total_cnt = len(new_df)
-issue_perc = f"{issue_cnt/total_cnt*100:.0f}%"
-
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.metric("Number of responses", issue_cnt)
-with col2:
-    st.metric("Annotation Progress", issue_perc)
-
-df_plot = new_df[new_df["Category"] != ""].Category.value_counts().reset_index()
-
-st.bar_chart(df_plot, x="Category", y="count")
-
-st.write(
-    "Here we are at the end of getting started with streamlit! Happy Streamlit-ing! :balloon:"
-)
 

@@ -1,7 +1,6 @@
-# 📊 Data evaluation template
+# News Web App 
 
-A simple Streamlit app showing how to evaluate and annotate data, using dataframes
-and charts. 
+:newspaper: A simple application for collecting, processing and visualising the metadata of environmental articles published on The Guardian. 
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://data-evaluation-template.streamlit.app/)
 
