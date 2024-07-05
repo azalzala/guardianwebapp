@@ -7,7 +7,6 @@ import sqlalchemy
 import psycopg2
 import spacy 
 from textblob import TextBlob
-from spacy import displacy
 
 st.set_page_config(page_title="Guardian Stats", 
                    layout="wide", 

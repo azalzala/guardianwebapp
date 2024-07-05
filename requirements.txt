@@ -2,3 +2,11 @@ streamlit
 seaborn
 psycopg2-binary
 sqlalchemy
+pandas
+datetime
+matplotlib.pyplot
+spacy 
+textblob
+TextBlob
+numpy
+
