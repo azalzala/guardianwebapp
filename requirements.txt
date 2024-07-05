@@ -4,7 +4,7 @@ psycopg2-binary
 sqlalchemy
 pandas
 datetime
-matplotlib.pyplot
+matplotlib
 spacy 
 textblob
 TextBlob
