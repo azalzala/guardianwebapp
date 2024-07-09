@@ -6,7 +6,13 @@ import matplotlib.pyplot as plt
 import sqlalchemy
 import psycopg2
 import spacy 
+from spacy import displacy
 from textblob import TextBlob
+import numpy as np
+import pyecharts.options as opts
+from pyecharts.charts import Calendar
+from streamlit_echarts import st_pyecharts
+
 
 st.set_page_config(page_title="Guardian Stats", 
                    layout="wide", 
@@ -20,8 +26,9 @@ df = conn.query('SELECT * FROM student.dabble')
 @st.cache_data
 def get_data(df):
     df = pd.DataFrame(df)
-    df['webpublicationdate'] = pd.to_datetime(df['webpublicationdate'])
     return df
+# df['webpublicationdate'] = pd.to_datetime(df['webpublicationdate']).dt.date()
+
 
 @st.cache_resource  
 def load_model():
@@ -35,17 +42,18 @@ st.title("Guardian A.I News Data")
 df = get_data(df)
 today2 = datetime.date.today()
 yesterday = today2 - datetime.timedelta(days=1)
-today = str(yesterday)
-today_df = df[df['webpublicationdate'] == today]
+yesterday = str(yesterday)
+today_df = df[df['webpublicationdate'] == yesterday]
 today_df = today_df.groupby(['pillarname']).size().reset_index(name='count')
 st.markdown("### Yesterday's Publications: ")
-fig = plt.figure(figsize=(10, 4))
-sns.barplot(today_df, x='pillarname', y='count')
-st.pyplot(fig)
 
-today_df2 = df[df['webpublicationdate'] == today2]
-number_of_articles = len(today_df2)
-st.write(f"Total number of articles published today: {number_of_articles}")
+fig = plt.figure(figsize=(10, 4))
+
+a = sns.barplot(today_df, x='pillarname', y='count')
+a.set_xlabel('Pillar')
+a.set_ylabel('Article Count')
+a.set_ybound(0, len(today_df))
+st.pyplot(fig)
 
 # # Sidebar for filtering articles
 
@@ -64,6 +72,7 @@ with st.sidebar:
 df_selection = df.query(
     "sectionname == @section & pillarname == @pillar & webtitle.str.contains(@user_choice, case=False, na=False)", engine='python')
 
+df_selection = df_selection.reset_index()
 
 def preprocess(text): 
     doc = nlp(text)
@@ -93,57 +102,110 @@ def classify_sentiment(sentiment):
         return 'neutral'
 
 df_selection['sentiment_group'] = df_selection['sentiment'].apply(classify_sentiment)
-df_selection['webpubyear'] = pd.to_datetime(df_selection['webpublicationdate']).dt.year
+df_selection['webpubyear'] = pd.to_datetime(df_selection['webpublicationdate'], format="mixed").dt.year
 
+#Bar chart article data grouped by publication year and sentiment group
 x = df_selection.groupby(['webpubyear', 'sentiment_group']).size().reset_index(name='count')
-
+display_df = df_selection.loc[:, ['webtitle', 'weburl', 'webtitle_processed', 'sentiment', 'sentiment_group']]
+display_df.rename(columns={"webtitle": "Article Title", "weburl": "Article Page URL", "webtitle_processed": "Processed Article Title", "sentiment":"Sentiment Score", "sentiment_group":"Sentiment Group"})
 st.header('NLP dataframe')
-st.dataframe(df_selection)
+st.dataframe(display_df)
 
+# Section 3 : Articles grouped into sentiment groups
 st.markdown("### Article sentiment scores: ")
 fig = plt.figure(figsize=(10, 4))
 xxx= sns.set_palette("dark:#5A9_r")
-sns.barplot(x='webpubyear', y='count', hue='sentiment_group', data=x, palette=xxx)
+fig2 = plt.figure(figsize=(10, 4))
+b = sns.barplot(x='webpubyear', y='count', hue='sentiment_group', data=x)
+b.set_xlabel('Article Published Year')
+b.set_ylabel('Article Count')
+st.pyplot(fig2)
 
-st.pyplot(fig)
 st.divider()
 
 
+#Visualisations 
+    # extract entities from the webtitles 
+    # Calendar charts 
 
-# search = st.sidebar.button('Search')
+i = st.slider('Visualise the entities in the article title: ', min_value=0, max_value=len(df_selection))
+def get_image(i):
+    doc = nlp(df_selection['webtitle'][i]) 
+    doc_html = displacy.render(doc, style='ent', jupyter=False)
+    st.markdown(doc_html, unsafe_allow_html=True)
+    return doc_html
 
-# # # # Print webtitles
-# webtitles = list(user_df['webtitle'])
-# print(webtitles)
+if len(df_selection) > 0: 
+    get_image(i)
+else: 
+    st.write('None')
 
-# # Button to trigger search action
-# if st.button('Show Articles'):
-#     if not user_df.empty:
-#         st.success('Articles found.')
-#         st.write(webtitles)
-#     else:
-#         st.error('No articles to show.')
+# calendar chart 
+articles_by_day = df_selection.groupby('webpublicationdate').size().reset_index(name='count').sort_values('webpublicationdate', ascending=True)
+data = articles_by_day[['webpublicationdate', 'count']].values.tolist()
 
-#     # Display the final filtered DataFrame
-# st.dataframe(user_df)   
+article_calender_23 = (
+    Calendar()
+.add(
+        "", data, calendar_opts=opts.CalendarOpts(range_='2023')
+    )
+    .set_global_opts(
+        title_opts=opts.TitleOpts(title="Publication tally 2023"),
+        visualmap_opts=opts.VisualMapOpts(
+            max_=0, min_=10, orient="horizontal", is_piecewise=False
+        ) 
+    )
+    ) 
 
-# st.divider()
+article_calender_24 = (
+    Calendar()
+.add(
+        "", data, calendar_opts=opts.CalendarOpts(range_='2024')
+    )
+    .set_global_opts(
+        title_opts=opts.TitleOpts(title="Publication tally 2024"),
+        visualmap_opts=opts.VisualMapOpts(
+            max_=0, min_=10, orient="horizontal", is_piecewise=False
+        ) 
+    )
+    ) 
 
-# # #with col 2: 
-# # #visualisations 
-# # # top 10 ent/organisations mentioned ni articles in the past month 
-# # # most positive month? negative also / neutral 
-# #     # extract entities from the webtitles 
-# #     # sentiment scores for web titiles 
+article_calender_22 = (
+    Calendar()
+.add(
+        "", data, calendar_opts=opts.CalendarOpts(range_='2022')
+    )
+    .set_global_opts(
+        title_opts=opts.TitleOpts(title="Publication tally 2022"),
+        visualmap_opts=opts.VisualMapOpts(
+            max_=0, min_=10, orient="horizontal", is_piecewise=False
+        ) 
+    )
+    ) 
 
-sns.barplot(x='webpubyear', y='count', hue='sentiment_group', data=x)
-# #     # group the articles by month published/? - count sentiment. 
+st.divider()
 
-#user_choice = st.text_input('Enter a keyword: ', '')
+with st.expander("Publication Calendar: "):
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1: 
+        label1 = st.button("2022")
+    with col2: 
+        label2 = st.button("2023")
+    with col3: 
+        label3 = st.button("2024")
 
-#user_df = df[df['webtitle'].str.contains(user_choice, case=False, na=False)]
-#st.dataframe(user_df)
+    if label1: 
+        st_pyecharts(article_calender_22)
+    if label2:
+        st_pyecharts(article_calender_23)
+    if label3:
+        st_pyecharts(article_calender_24)
+# top 10 - people, organisations 
 
-# i = st.number_input('Investigate the article entities further for a web title of your choice: ', 0, len(df_selection))
-# doc = df_selection['webtitle'][i]
-# displacy.render(doc, style='ent', manual=True)
+
+# topic modelling 
+
+# hydralit feedback + sentiment bars 
+
+# use LLM to create categories of AI use??
+
