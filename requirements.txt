@@ -1,12 +1,13 @@
-streamlit
-seaborn
-psycopg2-binary
-sqlalchemy
-pandas
+streamlit==1.36.0
+seaborn==0.13.2
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.31
+pandas==2.2.2
 datetime
-matplotlib
-spacy 
-textblob
-TextBlob
-numpy
-
+matplotlib==3.9.0
+spacy==3.7.5
+textblob==0.18.0.post0
+numpy==1.25.0
+plotly==5.22.0
+plotly.express==0.4.1
+pyecharts == 2.0.6
