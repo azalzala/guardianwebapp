@@ -37,15 +37,16 @@ def load_model():
 nlp = load_model()
 
 
-st.title("Guardian A.I News Data")
-
+st.title("The Guardian A.I News Data Explorer")
+st.markdown('- Features NLP-processed article titles collected using the Guardian OpenPlatform API')
+st.markdown('- Sentiment analysis of your group of articles chosen using the sidebar filters')
 df = get_data(df)
 today2 = datetime.date.today()
 yesterday = today2 - datetime.timedelta(days=1)
 yesterday = str(yesterday)
 today_df = df[df['webpublicationdate'] == yesterday]
 today_df = today_df.groupby(['pillarname']).size().reset_index(name='count')
-st.markdown("### Yesterday's Publications: ")
+st.markdown("### What were yesterdays publications by pillar? ")
 
 fig = plt.figure(figsize=(10, 4))
 
@@ -108,11 +109,11 @@ df_selection['webpubyear'] = pd.to_datetime(df_selection['webpublicationdate'], 
 x = df_selection.groupby(['webpubyear', 'sentiment_group']).size().reset_index(name='count')
 display_df = df_selection.loc[:, ['webtitle', 'weburl', 'webtitle_processed', 'sentiment', 'sentiment_group']]
 display_df.rename(columns={"webtitle": "Article Title", "weburl": "Article Page URL", "webtitle_processed": "Processed Article Title", "sentiment":"Sentiment Score", "sentiment_group":"Sentiment Group"})
-st.header('NLP dataframe')
+st.header('Sentiment Scores for Selected Article Titles')
 st.dataframe(display_df)
 
 # Section 3 : Articles grouped into sentiment groups
-st.markdown("### Article sentiment scores: ")
+st.markdown("### Are these articles positive, negative or neutral?")
 fig = plt.figure(figsize=(10, 4))
 xxx= sns.set_palette("dark:#5A9_r")
 fig2 = plt.figure(figsize=(10, 4))
@@ -185,6 +186,8 @@ article_calender_22 = (
 
 st.divider()
 
+st.markdown("### Check when these articles were published throughout the year")
+
 with st.expander("Publication Calendar: "):
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1: 
@@ -202,7 +205,20 @@ with st.expander("Publication Calendar: "):
         st_pyecharts(article_calender_24)
 # top 10 - people, organisations 
 
+# '''
 
+# list_of_entities = []
+# for sentence in list: 
+#     word_ent = ''
+#     ent_type = None
+
+#     for word in sentence: 
+#         term = word.text
+#         tag = word.ent
+#         if tag: 
+#             word_ent = ''.join(word_ent, term)
+            
+# '''
 # topic modelling 
 
 # hydralit feedback + sentiment bars 
