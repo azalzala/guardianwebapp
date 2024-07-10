@@ -11,3 +11,4 @@ numpy==1.25.0
 plotly==5.22.0
 plotly.express==0.4.1
 pyecharts == 2.0.6
+streamlit_echarts == 0.4.0
