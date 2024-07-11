@@ -5,7 +5,7 @@ sqlalchemy==2.0.31
 pandas==2.2.2
 datetime
 matplotlib==3.9.0
-spacy==3.7.1
+spacy==3.7.5
 textblob==0.18.0.post0
 numpy==1.25.0
 plotly==5.22.0
