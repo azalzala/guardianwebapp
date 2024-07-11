@@ -12,6 +12,8 @@ import numpy as np
 import pyecharts.options as opts
 from pyecharts.charts import Calendar
 from streamlit_echarts import st_pyecharts
+import en_core_web_md
+import subprocess
 
 
 st.set_page_config(page_title="Guardian Stats", 
@@ -20,19 +22,26 @@ st.set_page_config(page_title="Guardian Stats",
 
 
 # connecting the web app to database 
+
 conn = st.connection("postgresql", type="sql")
-df = conn.query('SELECT * FROM student.dabble')
+query_output = conn.query('SELECT * FROM student.dabble')
 
 @st.cache_data
-def get_data(df):
-    df = pd.DataFrame(df)
+def get_data(query_ouput):
+    df = pd.DataFrame(query_output)
     return df
 # df['webpublicationdate'] = pd.to_datetime(df['webpublicationdate']).dt.date()
 
 
+@st.cache_resource
+def download_en_core_web_sm():
+    subprocess.run(["python", "-m", "spacy", "download", "en_core_web_md"])
+
 @st.cache_resource  
 def load_model():
-    return spacy.load('en_core_web_md')
+    return en_core_web_md.load()
+
+download_en_core_web_sm()
 
 nlp = load_model()
 
@@ -40,7 +49,7 @@ nlp = load_model()
 st.title("The Guardian A.I News Data Explorer")
 st.markdown('- Features NLP-processed article titles collected using the Guardian OpenPlatform API')
 st.markdown('- Sentiment analysis of your group of articles chosen using the sidebar filters')
-df = get_data(df)
+df = get_data(query_output)
 today2 = datetime.date.today()
 yesterday = today2 - datetime.timedelta(days=1)
 yesterday = str(yesterday)

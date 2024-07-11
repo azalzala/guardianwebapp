@@ -5,10 +5,11 @@ sqlalchemy==2.0.31
 pandas==2.2.2
 datetime
 matplotlib==3.9.0
-spacy==3.7.5
+spacy==3.7.1
 textblob==0.18.0.post0
 numpy==1.25.0
 plotly==5.22.0
 plotly.express==0.4.1
 pyecharts == 2.0.6
 streamlit_echarts == 0.4.0
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
