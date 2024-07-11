@@ -12,4 +12,4 @@ plotly==5.22.0
 plotly.express==0.4.1
 pyecharts == 2.0.6
 streamlit_echarts == 0.4.0
-en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1.tar.gz
